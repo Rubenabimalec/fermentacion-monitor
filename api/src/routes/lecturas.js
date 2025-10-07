@@ -150,7 +150,41 @@ router.get('/:fermentacion_id/ultima', async (req, res) => {
 
 // ── Alertas (sin cambios) ─────────────────────────────────────────────────────
 async function verificarAlertas(lectura) {
-  // ... (tu lógica actual, sin cambios)
+  try {
+    const { rows } = await db.query(
+      'SELECT * FROM alertas_config WHERE fermentacion_id = $1',
+      [lectura.fermentacion_id]
+    )
+    if (!rows.length) return
+
+    const config  = rows[0]
+    const alertas = []
+
+    if (lectura.temperatura_mosto !== null) {
+      if (lectura.temperatura_mosto > config.temp_max)
+        alertas.push({ tipo: 'temp_alta', mensaje: `Temperatura alta: ${lectura.temperatura_mosto}°C (máx ${config.temp_max}°C)`, valor: lectura.temperatura_mosto })
+      if (lectura.temperatura_mosto < config.temp_min)
+        alertas.push({ tipo: 'temp_baja', mensaje: `Temperatura baja: ${lectura.temperatura_mosto}°C (mín ${config.temp_min}°C)`, valor: lectura.temperatura_mosto })
+    }
+
+    if (lectura.ph !== null) {
+      if (lectura.ph < config.ph_min)
+        alertas.push({ tipo: 'ph_bajo', mensaje: `pH bajo: ${lectura.ph} (mín ${config.ph_min}) — posible contaminación`, valor: lectura.ph })
+      if (lectura.ph > config.ph_max)
+        alertas.push({ tipo: 'ph_alto', mensaje: `pH alto: ${lectura.ph} (máx ${config.ph_max})`, valor: lectura.ph })
+    }
+
+    for (const alerta of alertas) {
+      await db.query(
+        `INSERT INTO alertas_log (fermentacion_id, tipo, mensaje, valor)
+         VALUES ($1, $2, $3, $4)`,
+        [lectura.fermentacion_id, alerta.tipo, alerta.mensaje, alerta.valor]
+      )
+      if (io) io.emit('nueva_alerta', { ...alerta, fermentacion_id: lectura.fermentacion_id })
+    }
+  } catch (err) {
+    console.error('Error verificando alertas:', err.message)
+  }
 }
 
 module.exports = router

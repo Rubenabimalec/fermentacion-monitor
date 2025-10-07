@@ -3,7 +3,7 @@
     <nav class="navbar">
       <RouterLink to="/" class="brand-link">
         <div class="logo-container">
-          <span class="beer-icon">🍺</span>
+          <span class="beer-icon"></span>
           <span class="brand-text">Monitor de Fermentación</span>
         </div>
       </RouterLink>
@@ -18,7 +18,7 @@
         </template>
 
         <template v-else>
-          <RouterLink to="/dashboard" class="nav-link">Dashboard</RouterLink>
+          
           <div class="user-badge">
             <span class="nav-user">{{ user?.name || 'Usuario' }}</span>
           </div>
@@ -71,7 +71,7 @@ const Lotes = () => router.push('/fermentacion')
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-dark);
+  background-color: #111318;  /* ← antes era #0a0a0b, un poco más claro */
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }

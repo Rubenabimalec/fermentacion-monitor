@@ -18,7 +18,11 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_SUPABASE_URL: https://zqzxyveylhklsrnohqjc.supabase.co
+        VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_laX2cEKL-iM3QofP0wl-bw_TXUOMu2g
     container_name: fermentacion_frontend
     environment:
       TZ: America/Tijuana

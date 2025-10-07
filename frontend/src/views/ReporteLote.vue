@@ -4,7 +4,7 @@
     <!-- Header -->
     <div class="reporte-header no-print-btn">
       <div class="header-left">
-        <router-link to="/lotes" class="btn-back">← Volver a lotes</router-link>
+        <router-link to="/fermentacion" class="btn-back">← Volver a lotes</router-link>
       </div>
       <button class="btn-pdf" @click="exportarPDF" :disabled="exportando">
         <span v-if="exportando">Generando PDF…</span>
@@ -14,7 +14,7 @@
 
     <!-- Portada del reporte -->
     <div class="reporte-portada">
-      <div class="portada-icono">🍺</div>
+      <div class="portada-icono"></div>
       <div class="portada-info">
         <h1 class="portada-titulo">{{ lote.nombre }}</h1>
         <p class="portada-sub">{{ lote.estilo }}</p>
