@@ -1,36 +1,39 @@
 <template>
-  <div id="app">
-    <!-- NAVBAR -->
+  <div id="app" class="app-container">
     <nav class="navbar">
       <RouterLink to="/" class="brand-link">
-        🍺 <span>Monitor de Fermentación</span>
+        <div class="logo-container">
+          <span class="beer-icon">🍺</span>
+          <span class="brand-text">Monitor de Fermentación</span>
+        </div>
       </RouterLink>
 
       <div class="nav-links">
-        <label @click="Lotes" class="nav-link">Lotes</label>
+        <button v-if="isAuthenticated" @click="Lotes" class="nav-btn">Lotes</button>
 
-        <!-- NO autenticado -->
         <template v-if="!isAuthenticated">
           <RouterLink to="/login" class="nav-link nav-link--cta">
             Iniciar sesión
           </RouterLink>
         </template>
 
-        <!-- Autenticado -->
         <template v-else>
           <RouterLink to="/dashboard" class="nav-link">Dashboard</RouterLink>
-          <span class="nav-user">{{ user?.name }}</span>
-          <button class="nav-link logout" @click="handleLogout">
-            Cerrar sesión
+          <div class="user-badge">
+            <span class="nav-user">{{ user?.name || 'Usuario' }}</span>
+          </div>
+          <button class="logout-btn" @click="handleLogout" title="Cerrar sesión">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
           </button>
         </template>
       </div>
     </nav>
 
-    <!-- CONTENIDO -->
-    <main class="main">
+    <main class="main-content">
       <RouterView v-slot="{ Component }">
-        <Transition name="fade" mode="out-in">
+        <Transition name="page-fade" mode="out-in">
           <component :is="Component" />
         </Transition>
       </RouterView>
@@ -50,90 +53,167 @@ async function handleLogout() {
   router.push('/login')
 }
 
-async function Lotes() {
-
-  router.push('/fermentacion')
-}
-
-
-
-
-
-
+const Lotes = () => router.push('/fermentacion')
 </script>
 
 <style>
-body {
-  font-family: system-ui, sans-serif;
-  /* background: #0d0d0f; */
-  background: #637c6d;
-  color: #000000;
+/* Estilos Globales para mantener la coherencia con el login */
+:root {
+  --bg-dark: #0a0a0b;
+  --bg-card: #161920;
+  --accent-gold: #b07f4e;
+  --accent-gold-hover: #8e653e;
+  --text-primary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border-color: rgba(176, 127, 78, 0.2);
 }
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
 </style>
 
 <style scoped>
+.app-container {
+  min-h-screen: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
-  padding: 1rem 2rem;
-  background: #1a1208;
-  color: #f0a830;
+  align-items: center;
+  padding: 0.75rem 2rem;
+  background: #0f1116;
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .brand-link {
   text-decoration: none;
-  font-weight: bold;
-  color: #f0a830;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.beer-icon { font-size: 1.5rem; }
+
+.brand-text {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-gold);
+  font-size: 1.1rem;
 }
 
 .nav-links {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   align-items: center;
 }
 
-.nav-link {
+.nav-link, .nav-btn {
   text-decoration: none;
-  color: #f0e6d0;
-  font-size: 0.9rem;
-}
-
-.nav-link:hover {
-  color: #f0a830;
-}
-
-.nav-link--cta {
-  background: #f0a830;
-  color: #1a1208;
-  padding: 0.3rem 0.8rem;
-  border-radius: 5px;
-}
-
-.nav-user {
-  color: #f0a830;
-}
-
-.logout {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
   background: none;
   border: none;
-  color: #ff6b6b;
   cursor: pointer;
 }
 
-.main {
-  padding: 1.5rem;
-  max-width: 1200px;
-  margin: auto;
+.nav-link:hover, .nav-btn:hover {
+  color: var(--accent-gold);
 }
 
-/* transición */
-.fade-enter-active,
-.fade-leave-active {
-  transition: 0.2s ease;
+.nav-link--cta {
+  background: var(--accent-gold);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 15px rgba(176, 127, 78, 0.2);
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.nav-link--cta:hover {
+  background: var(--accent-gold-hover);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.user-badge {
+  background: rgba(176, 127, 78, 0.1);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.nav-user {
+  color: var(--accent-gold);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Transición de página */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.page-fade-enter-from {
   opacity: 0;
+  transform: translateY(10px);
 }
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Ajuste para iconos SVG */
+.h-5 { height: 1.25rem; }
+.w-5 { width: 1.25rem; }
 </style>

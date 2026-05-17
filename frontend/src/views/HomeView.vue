@@ -1,526 +1,124 @@
-<!-- src/views/HomeView.vue -->
 <template>
-  <div class="home">
-
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-bg" aria-hidden="true">
-        <div class="orb orb--1"></div>
-        <div class="orb orb--2"></div>
-        <div class="hex-grid"></div>
+  <div class="space-y-16 py-8">
+    <section class="relative overflow-hidden rounded-3xl bg-[#0f1116] border border-yellow-900/20 shadow-2xl">
+      <div class="absolute inset-0 bg-gradient-to-r from-[#0a0a0b] via-transparent to-transparent z-10"></div>
+      
+      <div class="absolute right-0 top-0 w-1/2 h-full opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+        <img 
+          src="https://images.unsplash.com/photo-1555658636-6e4a36218be7?auto=format&fit=crop&q=80&w=1000" 
+          alt="Brewery" 
+          class="object-cover h-full w-full"
+        />
       </div>
 
-      <div class="hero-content">
-        <div class="hero-chip">
-          <span class="chip-dot"></span>
-          Vue 3 + Composition API
+      <div class="relative z-20 p-8 md:p-16 max-w-2xl">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="h-1 w-8 bg-[#b07f4e]"></span>
+          <span class="text-[#b07f4e] text-xs font-bold uppercase tracking-[0.3em]">Cervecería Digital</span>
         </div>
-
-        <h1 class="hero-title">
-          Aprende <em>autenticación</em><br/>
-          con Vue Router
+        <h1 class="text-5xl md:text-6xl font-black text-white leading-tight mb-6">
+          EL ARTE DE <br />
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#b07f4e] to-[#d4af37]">
+            LA FERMENTACIÓN
+          </span>
         </h1>
-
-        <p class="hero-desc">
-          Proyecto de práctica para dominar el flujo completo de login,
-          protección de rutas y manejo de sesión con la Composition API.
+        <p class="text-gray-400 text-lg mb-10 leading-relaxed">
+          Monitorea cada burbuja, grado y cambio químico en tiempo real. 
+          Lleva tu producción artesanal al siguiente nivel con precisión industrial.
         </p>
-
-        <div class="hero-actions">
-          <RouterLink v-if="!isAuthenticated" to="/login" class="btn btn--primary">
-            Iniciar sesión →
-          </RouterLink>
-          <RouterLink v-else to="/dashboard" class="btn btn--primary">
-            Ir al Dashboard →
-          </RouterLink>
-
-            href="https://router.vuejs.org"
-            target="_blank"
-            rel="noopener"
-            class="btn btn--ghost"
+        
+        <div class="flex flex-wrap gap-4">
+          <router-link 
+            to="/fermentacion" 
+            class="px-8 py-4 bg-[#b07f4e] hover:bg-[#8e653e] text-white font-bold rounded-xl transition-all shadow-lg shadow-yellow-900/20 uppercase text-sm tracking-widest"
           >
-            Ver documentación ↗
-
-        </div>
-      </div>
-
-      <div class="hero-visual" aria-hidden="true">
-        <div class="code-card">
-          <div class="code-card__bar">
-            <span></span><span></span><span></span>
-          </div>
-          <pre class="code-card__body"><code><span class="t-comment">// Navigation Guard</span>
-<span class="t-keyword">router</span>.<span class="t-fn">beforeEach</span>(<span class="t-param">(to, from)</span> => {
-  <span class="t-keyword">const</span> { isAuthenticated }
-    = <span class="t-fn">useAuth</span>()
-
-  <span class="t-keyword">if</span> (to.meta.<span class="t-prop">requiresAuth</span>
-    && !isAuthenticated.<span class="t-prop">value</span>) {
-    <span class="t-keyword">return</span> { <span class="t-prop">name</span>: <span class="t-string">'login'</span> }
-  }
-})</code></pre>
+            Ver mis Lotes
+          </router-link>
+          <router-link 
+            to="/dashboard" 
+            class="px-8 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold rounded-xl transition-all uppercase text-sm tracking-widest"
+          >
+            Dashboard
+          </router-link>
         </div>
       </div>
     </section>
 
-    <!-- FEATURES -->
-    <section class="features">
-      <div
-        v-for="(feat, i) in features"
-        :key="feat.title"
-        class="feat-card"
-        :style="{ animationDelay: `${i * 0.1}s` }"
-      >
-        <div class="feat-icon">{{ feat.icon }}</div>
-        <h3 class="feat-title">{{ feat.title }}</h3>
-        <p class="feat-desc">{{ feat.desc }}</p>
-        <div class="feat-tag">{{ feat.tag }}</div>
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div v-for="stat in quickStats" :key="stat.label" 
+        class="bg-[#161920] p-6 rounded-2xl border border-gray-800 hover:border-[#b07f4e]/50 transition-colors group">
+        <div class="text-[#b07f4e] mb-4 group-hover:scale-110 transition-transform duration-300" v-html="stat.icon"></div>
+        <h3 class="text-gray-500 text-xs uppercase tracking-widest mb-1">{{ stat.label }}</h3>
+        <p class="text-2xl font-mono text-white">{{ stat.value }}<span class="text-sm text-gray-500 ml-1">{{ stat.unit }}</span></p>
       </div>
     </section>
 
-    <!-- FLUJO -->
-    <section class="flow-section">
-      <h2 class="section-title">Flujo de autenticación</h2>
-      <p class="section-sub">Así viaja el usuario por la aplicación</p>
-
-      <div class="flow">
-        <div
-          v-for="(step, i) in flowSteps"
-          :key="step.label"
-          class="flow-item"
-        >
-          <div class="flow-node" :class="`node--${step.color}`">
-            <span>{{ step.icon }}</span>
-          </div>
-          <span class="flow-label">{{ step.label }}</span>
-          <div v-if="i < flowSteps.length - 1" class="flow-arrow">→</div>
+    <section class="grid md:grid-cols-2 gap-12 items-center px-4">
+      <div class="order-2 md:order-1">
+        <h2 class="text-3xl font-bold text-white mb-6">Control Total sobre el Mosto</h2>
+        <ul class="space-y-6">
+          <li class="flex gap-4">
+            <div class="flex-none h-6 w-6 rounded-full bg-[#b07f4e]/20 flex items-center justify-center text-[#b07f4e] text-xs font-bold">1</div>
+            <div>
+              <h4 class="text-white font-semibold">Precisión Térmica</h4>
+              <p class="text-gray-400 text-sm">Alertas instantáneas si la temperatura se desvía del rango óptimo para la levadura.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <div class="flex-none h-6 w-6 rounded-full bg-[#b07f4e]/20 flex items-center justify-center text-[#b07f4e] text-xs font-bold">2</div>
+            <div>
+              <h4 class="text-white font-semibold">Actividad de CO₂</h4>
+              <p class="text-gray-400 text-sm">Visualización gráfica de la intensidad de fermentación mediante el conteo de burbujas.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <div class="flex-none h-6 w-6 rounded-full bg-[#b07f4e]/20 flex items-center justify-center text-[#b07f4e] text-xs font-bold">3</div>
+            <div>
+              <h4 class="text-white font-semibold">Historial de Lotes</h4>
+              <p class="text-gray-400 text-sm">Compara datos de fermentaciones pasadas para replicar tus mejores recetas.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="order-1 md:order-2 bg-gradient-to-br from-[#b07f4e]/10 to-transparent p-1 rounded-3xl">
+        <div class="bg-[#0a0a0b] p-4 rounded-[calc(1.5rem-1px)] overflow-hidden border border-gray-800">
+           <img 
+            src="https://images.unsplash.com/photo-1584225064785-c72a87949f8a?auto=format&fit=crop&q=80&w=800" 
+            alt="Sensors" 
+            class="rounded-xl opacity-80 hover:scale-105 transition-transform duration-500"
+          />
         </div>
       </div>
     </section>
-
-    <!-- CTA FINAL -->
-    <section class="cta-section">
-      <h2 class="cta-title">¿Listo para practicar?</h2>
-      <p class="cta-sub">
-        Inicia sesión con las credenciales de prueba y explora
-        la protección de rutas en acción.
-      </p>
-      <RouterLink v-if="!isAuthenticated" to="/login" class="btn btn--primary btn--lg">
-        Comenzar ahora →
-      </RouterLink>
-      <RouterLink v-else to="/dashboard" class="btn btn--primary btn--lg">
-        Ver mi Dashboard →
-      </RouterLink>
-    </section>
-
   </div>
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
-
-const { isAuthenticated } = useAuth()
-
-const features = [
-  {
-    icon: '🔐',
-    title: 'Login reactivo',
-    desc: 'Formulario con validación en tiempo real usando reactive() y computed().',
-    tag: 'LoginView.vue',
+const quickStats = [
+  { 
+    label: 'Temperatura Promedio', 
+    value: '19.5', 
+    unit: '°C',
+    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>'
   },
-  {
-    icon: '🛡️',
-    title: 'Rutas protegidas',
-    desc: 'Navigation guards con beforeEach bloquean el acceso sin autenticación.',
-    tag: 'router/index.js',
+  { 
+    label: 'Lotes Activos', 
+    value: '03', 
+    unit: 'Tanques',
+    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>'
   },
-  {
-    icon: '⚡',
-    title: 'Estado global',
-    desc: 'useAuth() comparte el estado de sesión entre todos los componentes.',
-    tag: 'useAuth.js',
-  },
-  {
-    icon: '💾',
-    title: 'Persistencia',
-    desc: 'El token se guarda en localStorage para mantener la sesión activa.',
-    tag: 'composable',
-  },
-]
-
-const flowSteps = [
-  { icon: '🏠', label: 'Home',        color: 'gold'  },
-  { icon: '🔑', label: 'Login',       color: 'blue'  },
-  { icon: '✅', label: 'Autenticado', color: 'green' },
-  { icon: '📊', label: 'Dashboard',   color: 'gold'  },
+  { 
+    label: 'Eficiencia Global', 
+    value: '94.2', 
+    unit: '%',
+    icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>'
+  }
 ]
 </script>
 
 <style scoped>
-.home {
-  display: flex;
-  flex-direction: column;
-  gap: 5rem;
-  padding-bottom: 3rem;
-}
-
-/* ── HERO ── */
-.hero {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: center;
-  min-height: 480px;
-  padding: 3rem 0;
-  overflow: hidden;
-}
-
-@media (max-width: 768px) {
-  .hero { grid-template-columns: 1fr; }
-  .hero-visual { display: none; }
-}
-
-/* Fondo decorativo */
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.12;
-}
-
-.orb--1 {
-  width: 400px; height: 400px;
-  background: #c8a96e;
-  top: -100px; left: -100px;
-  animation: drift 8s ease-in-out infinite alternate;
-}
-
-.orb--2 {
-  width: 300px; height: 300px;
-  background: #6eb4e8;
-  bottom: -80px; right: 100px;
-  animation: drift 10s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes drift {
-  from { transform: translate(0, 0); }
-  to   { transform: translate(30px, 20px); }
-}
-
-.hex-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(200, 169, 110, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(200, 169, 110, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* Contenido hero */
-.hero-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.hero-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(200, 169, 110, 0.08);
-  border: 1px solid rgba(200, 169, 110, 0.2);
-  padding: 0.3rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  color: #c8a96e;
-  width: fit-content;
-  letter-spacing: 0.03em;
-}
-
-.chip-dot {
-  width: 6px; height: 6px;
-  background: #c8a96e;
-  border-radius: 50%;
-  animation: blink 2s ease-in-out infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-
-.hero-title {
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: #e8e4dc;
-  line-height: 1.15;
-  margin: 0;
-}
-
-.hero-title em {
-  font-style: normal;
-  background: linear-gradient(135deg, #c8a96e, #e8d5a3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.hero-desc {
-  color: #6b6560;
-  font-size: 1rem;
-  line-height: 1.65;
-  margin: 0;
-  max-width: 440px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-/* Botones */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.65rem 1.4rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-.btn--primary {
-  background: linear-gradient(135deg, #c8a96e, #a0834e);
-  color: #0d0d0f;
-}
-
-.btn--primary:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(200, 169, 110, 0.25);
-}
-
-.btn--ghost {
-  background: rgba(255,255,255,0.05);
-  color: #9a938c;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.btn--ghost:hover {
-  background: rgba(255,255,255,0.09);
-  color: #e8e4dc;
-}
-
-.btn--lg { padding: 0.85rem 2rem; font-size: 1rem; }
-
-/* Tarjeta de código */
-.hero-visual {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.code-card {
-  background: #111113;
-  border: 1px solid rgba(200, 169, 110, 0.15);
-  border-radius: 14px;
-  overflow: hidden;
-  width: 100%;
-  max-width: 380px;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.03),
-    0 24px 48px rgba(0,0,0,0.4);
-  animation: floatCard 6s ease-in-out infinite;
-}
-
-@keyframes floatCard {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-10px); }
-}
-
-.code-card__bar {
-  display: flex;
-  gap: 6px;
-  padding: 0.7rem 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  background: rgba(255,255,255,0.02);
-}
-
-.code-card__bar span {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-}
-
-.code-card__body {
-  padding: 1.25rem 1.4rem;
-  margin: 0;
-  font-family: 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 0.78rem;
-  line-height: 1.75;
-  overflow-x: auto;
-}
-
-/* Syntax highlight manual */
-.t-comment { color: #4a4a5a; }
-.t-keyword  { color: #6eb4e8; }
-.t-fn       { color: #c8a96e; }
-.t-param    { color: #b08ce8; }
-.t-prop     { color: #e8c46e; }
-.t-string   { color: #6fcf97; }
-
-/* ── FEATURES ── */
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.feat-card {
-  padding: 1.5rem;
-  background: rgba(22, 22, 26, 0.8);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  animation: slideUp 0.4s ease both;
-  transition: border-color 0.2s, transform 0.2s;
-}
-
-.feat-card:hover {
-  border-color: rgba(200, 169, 110, 0.2);
-  transform: translateY(-3px);
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.feat-icon  { font-size: 1.75rem; }
-.feat-title { font-size: 1rem; font-weight: 700; color: #e8e4dc; margin: 0; }
-.feat-desc  { font-size: 0.85rem; color: #5a5550; line-height: 1.55; margin: 0; flex: 1; }
-
-.feat-tag {
-  font-size: 0.72rem;
-  font-family: monospace;
-  color: #c8a96e;
-  background: rgba(200, 169, 110, 0.08);
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  width: fit-content;
-}
-
-/* ── FLUJO ── */
-.flow-section {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #e8e4dc;
-  letter-spacing: -0.03em;
-  margin: 0;
-}
-
-.section-sub {
-  color: #5a5550;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.flow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-.flow-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.flow-node {
-  width: 56px; height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-}
-
-.node--gold  { background: rgba(200,169,110,0.12); border: 1px solid rgba(200,169,110,0.25); }
-.node--blue  { background: rgba(110,180,232,0.12); border: 1px solid rgba(110,180,232,0.25); }
-.node--green { background: rgba(111,207,151,0.12); border: 1px solid rgba(111,207,151,0.25); }
-
-.flow-label {
-  font-size: 0.75rem;
-  color: #5a5550;
-  position: absolute;
-  margin-top: 72px;
-}
-
-.flow-item { position: relative; }
-
-.flow-arrow {
-  color: #3a3530;
-  font-size: 1.2rem;
-  margin: 0 0.25rem;
-}
-
-/* ── CTA ── */
-.cta-section {
-  text-align: center;
-  padding: 3rem 2rem;
-  background: rgba(22, 22, 26, 0.8);
-  border: 1px solid rgba(200, 169, 110, 0.1);
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.cta-title {
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #e8e4dc;
-  margin: 0;
-}
-
-.cta-sub {
-  color: #5a5550;
-  font-size: 0.95rem;
-  max-width: 400px;
-  line-height: 1.6;
-  margin: 0;
+/* Un poco de brillo para el texto dorado */
+.text-transparent {
+  text-shadow: 0 0 30px rgba(176, 127, 78, 0.3);
 }
 </style>

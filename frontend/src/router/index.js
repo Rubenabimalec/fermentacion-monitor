@@ -121,8 +121,10 @@ router.beforeEach((to, from) => {
 
   // 3. Ruta guestOnly + usuario YA autenticado → redirige a /dashboard
   if (to.meta.guestOnly && isAuthenticated.value) {
-    return { name: 'dashboard' }
+    return { name: 'fermentacion' }
   }
+
+  
 
   // 4. Todo bien, permite la navegación
   return true
