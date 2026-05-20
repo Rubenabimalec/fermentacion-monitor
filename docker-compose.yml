@@ -2,24 +2,40 @@ services:
   nginx:
     image: nginx:alpine
     container_name: fermentacion_nginx
+    environment:
+      TZ: America/Tijuana
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - api
-      - frontend
+      api:
+        condition: service_started
+      frontend:
+        condition: service_started
     restart: unless-stopped
 
   frontend:
     build: ./frontend
     container_name: fermentacion_frontend
+    environment:
+      TZ: America/Tijuana
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     restart: unless-stopped
 
   api:
     build: ./api
     container_name: fermentacion_api
+    environment:
+      TZ: America/Tijuana
     env_file: .env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     depends_on:
       db:
         condition: service_healthy
@@ -28,8 +44,13 @@ services:
   db:
     image: postgres:16-alpine
     container_name: fermentacion_db
+    environment:
+      TZ: America/Tijuana
+      PGTZ: America/Tijuana
     env_file: .env
     volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
       - pg_data:/var/lib/postgresql/data
       - ./api/src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     healthcheck:
@@ -42,6 +63,11 @@ services:
   adminer:
     image: adminer
     container_name: fermentacion_adminer
+    environment:
+      TZ: America/Tijuana
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     ports:
       - "8080:8080"
     depends_on:
@@ -50,4 +76,5 @@ services:
 
 volumes:
   pg_data:
+
   

@@ -40,6 +40,9 @@
         class="card lote-card"
         @click="irDetalle(lote.id)"
       >
+           <p class="lote-estilo">
+          Id: {{ lote.id}}
+        </p>
         <div class="lote-header">
           <span class="lote-nombre">{{ lote.nombre }}</span>
 

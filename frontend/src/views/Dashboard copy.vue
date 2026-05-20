@@ -1,16 +1,6 @@
 <template>
   <div v-if="lote">
     <div class="encabezado">
-          <!-- Dentro de .encabezado, al lado del badge existente -->
-<div style="display:flex; gap:.5rem; align-items:center">
-  <span :class="['badge', lote.activa ? 'badge-activo' : 'badge-inactivo']">
-    {{ lote.activa ? 'Activo' : 'Finalizado' }}
-  </span>
-  <span :class="['badge-ws', `badge-ws--${conexion}`]">
-    {{ conexion === 'en-vivo' ? '● En vivo' : conexion === 'desconectado' ? '○ Sin conexión' : '◌ Conectando' }}
-  </span>
-   <div> <button @click="gotoreport"> Generar Reporte</button></div>
-</div>
       <div>
         <h1>{{ lote.nombre }}</h1>
         <p class="subtitulo">{{ lote.estilo }} · Iniciado {{ formatearFecha(lote.created_at) }}</p>
@@ -18,8 +8,8 @@
       <span :class="['badge', lote.activa ? 'badge-activo' : 'badge-inactivo']">
         {{ lote.activa ? 'Activo' : 'Finalizado' }}
       </span>
+      
     </div>
-
 
     <!-- Tarjetas de estado actual -->
     <div class="grilla-tarjetas">
@@ -109,35 +99,27 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute,useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { io } from 'socket.io-client'
 import GraficaLinea from '../components/GraficaLinea.vue'
 
-const route  = useRoute()
-const router = useRouter()
-const loteId = route.params.id
+const route      = useRoute()
+const loteId     = route.params.id
 
 const lote       = ref(null)
 const lecturas   = ref([])
 const alertasLog = ref([])
 const config     = ref({ temp_min: 16, temp_max: 24, ph_min: 3.8, ph_max: 5.5 })
-const conexion   = ref('conectando')   // 'conectando' | 'en-vivo' | 'desconectado'
-
-const ultima = computed(() => lecturas.value.at(-1) || {})
+const ultima     = computed(() => lecturas.value.at(-1) || {})
 
 
-const gotoreport = () => {
-  router.push (`/lotes/${loteId}/reporte`)
-}
-
-const alertaTemp = computed(() =>
+const alertaTemp     = computed(() =>
   ultima.value.temperatura_mosto > config.value.temp_max ||
   ultima.value.temperatura_mosto < config.value.temp_min
 )
 const alertaBurbujas = computed(() => ultima.value.burbujas_por_minuto === 0)
-const alertaPh = computed(() =>
-  ultima.value.ph < config.value.ph_min ||
-  ultima.value.ph > config.value.ph_max
+const alertaPh       = computed(() =>
+  ultima.value.ph < config.value.ph_min || ultima.value.ph > config.value.ph_max
 )
 const estadoFermentacion = computed(() => {
   const b = ultima.value.burbujas_por_minuto
@@ -148,7 +130,8 @@ const estadoFermentacion = computed(() => {
   return 'Actividad alta'
 })
 
-// ── Carga inicial desde REST ──────────────────────────────────────────────────
+let socket
+
 async function cargarDatos() {
   const [resLote, resLecturas, resConfig, resAlertas] = await Promise.all([
     fetch(`/api/fermentaciones/${loteId}`),
@@ -162,20 +145,6 @@ async function cargarDatos() {
   if (resConfig.ok) config.value = await resConfig.json()
 }
 
-// ── Normalizar lectura: garantizar created_at y tipos correctos ───────────────
-// El servidor emite antes de guardar en BD, así que created_at puede venir
-// como 'ts' (timestamp del emit) o no venir. Lo normalizamos aquí.
-function normalizarLectura(raw) {
-  return {
-    ...raw,
-    temperatura_mosto:    raw.temperatura_mosto    != null ? Number(raw.temperatura_mosto)    : null,
-    burbujas_por_minuto:  raw.burbujas_por_minuto  != null ? Number(raw.burbujas_por_minuto)  : null,
-    ph:                   raw.ph                   != null ? Number(raw.ph)                   : null,
-    created_at:           raw.created_at ?? raw.ts ?? new Date().toISOString()
-  }
-}
-
-// ── Formateo ──────────────────────────────────────────────────────────────────
 function formatearFecha(iso) {
   return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
 }
@@ -183,44 +152,23 @@ function formatearHora(iso) {
   return new Date(iso).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
-// ── WebSocket ─────────────────────────────────────────────────────────────────
-let socket
-
-function conectarSocket() {
-  // Sin argumentos: usa el mismo host/puerto que sirvió el frontend (nginx lo proxea)
-  socket = io({ transports: ['websocket'] })
-
-  socket.on('connect', () => {
-    conexion.value = 'en-vivo'
-    console.log('[WS] Conectado:', socket.id)
-  })
-
-  socket.on('disconnect', () => {
-    conexion.value = 'desconectado'
-    console.warn('[WS] Desconectado')
-  })
-
-  socket.on('nueva_lectura', (raw) => {
-    // Filtrar solo lecturas de este lote
-    if (String(raw.fermentacion_id) !== String(loteId)) return
-
-    const lectura = normalizarLectura(raw)
-    lecturas.value.push(lectura)
-
-    // Mantener las últimas 200 en memoria
-    if (lecturas.value.length > 200) lecturas.value.shift()
-  })
-
-  socket.on('nueva_alerta', (alerta) => {
-    if (String(alerta.fermentacion_id) !== String(loteId)) return
-    alertasLog.value.unshift(alerta)
-  })
-}
-
-// ── Ciclo de vida ─────────────────────────────────────────────────────────────
 onMounted(async () => {
   await cargarDatos()
-  conectarSocket()
+
+  // Conectar WebSocket para recibir lecturas en tiempo real
+  socket = io()
+  socket.on('nueva_lectura', (lectura) => {
+    if (String(lectura.fermentacion_id) === String(loteId)) {
+      lecturas.value.push(lectura)
+      // Mantener solo las últimas 200 lecturas en memoria
+      if (lecturas.value.length > 200) lecturas.value.shift()
+    }
+  })
+  socket.on('nueva_alerta', (alerta) => {
+    if (String(alerta.fermentacion_id) === String(loteId)) {
+      alertasLog.value.unshift(alerta)
+    }
+  })
 })
 
 onUnmounted(() => {
@@ -229,11 +177,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Agregar al <style scoped> */
-.badge-ws               { font-size: .78rem; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
-.badge-ws--en-vivo      { background: #eafaf1; color: #22804a; }
-.badge-ws--desconectado { background: #fcebeb; color: #a32d2d; }
-.badge-ws--conectando   { background: #faeeda; color: #854f0b; }
 .encabezado { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
 h1 { font-size: 1.4rem; font-weight: 600; }
 .subtitulo { color: #666; font-size: .9rem; margin-top: .25rem; }

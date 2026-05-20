@@ -37,6 +37,11 @@ const routes = [
     component: LoteDetalle,
     meta: { title: 'Dashboard de lote', requiresAuth:true },
   },
+  {
+  path: '/lotes/:id/reporte',
+  name: 'ReporteLote',
+  component: () => import('../views/ReporteLote.vue')
+},
 
   {
     path: '/fermentacion',
