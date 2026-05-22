@@ -41,7 +41,7 @@ const routes = [
   path: '/lotes/:id/reporte',
   name: 'ReporteLote',
   component: () => import('../views/ReporteLote.vue'),
-    meta: { title: 'RporteLote', requiresAuth:true },
+    meta: { title: 'Reporte', requiresAuth:true },
 },
 
   {
